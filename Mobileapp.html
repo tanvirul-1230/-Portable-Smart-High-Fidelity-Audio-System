@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Audio Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .app-header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .connection-status {
+            font-size: 14px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .control-section {
+            margin-bottom: 30px;
+        }
+
+        .control-label {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-icon {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .volume-control {
+            text-align: center;
+        }
+
+        .volume-display {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .volume-slider {
+            background: linear-gradient(90deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%);
+        }
+
+        .bass-slider {
+            background: linear-gradient(90deg, #ff9ff3 0%, #f368e0 100%);
+        }
+
+        .treble-slider {
+            background: linear-gradient(90deg, #74b9ff 0%, #0984e3 100%);
+        }
+
+        .eq-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .eq-control {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .eq-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .preset-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .power-controls {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+        }
+
+        .power-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .power-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .power-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .volume-display {
+                font-size: 36px;
+            }
+            
+            .eq-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <h1 class="app-title">Smart Audio System</h1>
+            <div class="connection-status">
+                <div class="status-dot"></div>
+                <span id="connectionStatus">Connected</span>
+            </div>
+        </div>
+
+        <!-- Volume Control -->
+        <div class="control-section volume-control">
+            <div class="control-label">
+                <svg class="control-icon" viewBox="0 0 24 24">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+                Volume
+            </div>
+            <div class="volume-display" id="volumeDisplay">50%</div>
+            <div class="slider-container">
+                <input type="range" min="0" max="100" value="50" class="slider volume-slider" id="volumeSlider">
+            </div>
+        </div>
+
+        <!-- EQ Controls -->
+        <div class="control-section">
+            <div class="control-label">
+                <svg class="control-icon" viewBox="0 0 24 24">
+                    <path d="M7 18h2V6H7v12zm4 4h2V2h-2v20zm-8-8h2v-4H3v4zm12 4h2V6h-2v12zm4-8v4h2v-4h-2z"/>
+                </svg>
+                Equalizer
+            </div>
+            <div class="eq-controls">
+                <div class="eq-control">
+                    <div class="eq-value" id="bassDisplay">+0</div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 15px;">Bass</div>
+                    <input type="range" min="-10" max="10" value="0" class="slider bass-slider" id="bassSlider">
+                </div>
+                <div class="eq-control">
+                    <div class="eq-value" id="trebleDisplay">+0</div>
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 15px;">Treble</div>
+                    <input type="range" min="-10" max="10" value="0" class="slider treble-slider" id="trebleSlider">
+                </div>
+            </div>
+        </div>
+
+        <!-- Preset Buttons -->
+        <div class="control-section">
+            <div class="control-label">
+                <svg class="control-icon" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                Presets
+            </div>
+            <div class="preset-buttons">
+                <button class="preset-btn active" onclick="setPreset('normal')">Normal</button>
+                <button class="preset-btn" onclick="setPreset('bass')">Bass Boost</button>
+                <button class="preset-btn" onclick="setPreset('vocal')">Vocal</button>
+                <button class="preset-btn" onclick="setPreset('classical')">Classical</button>
+            </div>
+        </div>
+
+        <!-- Power Controls -->
+        <div class="power-controls">
+            <button class="power-btn" onclick="previousTrack()" title="Previous">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                </svg>
+            </button>
+            <button class="power-btn" onclick="togglePlayPause()" title="Play/Pause" id="playBtn">
+                <svg viewBox="0 0 24 24" id="playIcon">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
+            <button class="power-btn" onclick="nextTrack()" title="Next">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Audio control variables
+        let volume = 50;
+        let bass = 0;
+        let treble = 0;
+        let isPlaying = false;
+
+        // DOM elements
+        const volumeSlider = document.getElementById('volumeSlider');
+        const bassSlider = document.getElementById('bassSlider');
+        const trebleSlider = document.getElementById('trebleSlider');
+        const volumeDisplay = document.getElementById('volumeDisplay');
+        const bassDisplay = document.getElementById('bassDisplay');
+        const trebleDisplay = document.getElementById('trebleDisplay');
+        const playBtn = document.getElementById('playBtn');
+        const playIcon = document.getElementById('playIcon');
+
+        // Volume control
+        volumeSlider.addEventListener('input', function() {
+            volume = this.value;
+            volumeDisplay.textContent = volume + '%';
+            sendBluetoothCommand('volume', volume);
+        });
+
+        // Bass control
+        bassSlider.addEventListener('input', function() {
+            bass = this.value;
+            bassDisplay.textContent = (bass >= 0 ? '+' : '') + bass;
+            sendBluetoothCommand('bass', bass);
+        });
+
+        // Treble control
+        trebleSlider.addEventListener('input', function() {
+            treble = this.value;
+            trebleDisplay.textContent = (treble >= 0 ? '+' : '') + treble;
+            sendBluetoothCommand('treble', treble);
+        });
+
+        // Preset functions
+        function setPreset(preset) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+
+            switch(preset) {
+                case 'normal':
+                    setBassAndTreble(0, 0);
+                    break;
+                case 'bass':
+                    setBassAndTreble(6, -2);
+                    break;
+                case 'vocal':
+                    setBassAndTreble(-2, 4);
+                    break;
+                case 'classical':
+                    setBassAndTreble(2, 3);
+                    break;
+            }
+            
+            sendBluetoothCommand('preset', preset);
+        }
+
+        function setBassAndTreble(bassValue, trebleValue) {
+            bass = bassValue;
+            treble = trebleValue;
+            
+            bassSlider.value = bass;
+            trebleSlider.value = treble;
+            bassDisplay.textContent = (bass >= 0 ? '+' : '') + bass;
+            trebleDisplay.textContent = (treble >= 0 ? '+' : '') + treble;
+            
+            sendBluetoothCommand('bass', bass);
+            sendBluetoothCommand('treble', treble);
+        }
+
+        // Media control functions
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            
+            if (isPlaying) {
+                playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+                playBtn.title = 'Pause';
+            } else {
+                playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+                playBtn.title = 'Play';
+            }
+            
+            sendBluetoothCommand('playpause', isPlaying);
+        }
+
+        function previousTrack() {
+            sendBluetoothCommand('previous', true);
+        }
+
+        function nextTrack() {
+            sendBluetoothCommand('next', true);
+        }
+
+        // Bluetooth communication function
+        function sendBluetoothCommand(command, value) {
+            // This function would send commands to your ESP32 via Bluetooth
+            console.log(`Sending command: ${command} = ${value}`);
+            
+            // For actual implementation, you would use:
+            // - Web Bluetooth API (Chrome/Edge)
+            // - Cordova/PhoneGap Bluetooth plugin
+            // - React Native Bluetooth library
+            // - Flutter bluetooth_serial plugin
+            
+            // Example Web Bluetooth API structure:
+            /*
+            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(`${command}:${value}\n`);
+                characteristic.writeValue(data);
+            }
+            */
+        }
+
+        // Simulate connection status changes
+        let connected = true;
+        setInterval(() => {
+            // This would be replaced with actual Bluetooth connection monitoring
+            document.getElementById('connectionStatus').textContent = connected ? 'Connected' : 'Disconnected';
+        }, 1000);
+
+        // Touch feedback for mobile
+        document.querySelectorAll('.preset-btn, .power-btn').forEach(btn => {
+            btn.addEventListener('touchstart', function() {
+                this.style.transform = 'scale(0.95)';
+            });
+            
+            btn.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+    </script>
+</body>
+</html>
